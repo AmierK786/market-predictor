@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { EquityChart } from "@/components/equity-chart";
 import { PriceChart } from "@/components/price-chart";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +50,19 @@ export default async function TickerPage({ params }: PageProps) {
 
   const ticker = results.tickers[upper];
   if (!ticker) {
-    notFound();
+    return (
+      <section className="mx-auto max-w-xl py-16">
+        <h1 className="font-[family-name:var(--font-heading)] text-4xl tracking-tight">
+          That ticker is not on the bench
+        </h1>
+        <p className="mt-4 text-muted-foreground">
+          Meridian covers SPY, QQQ, AAPL, MSFT, NVDA, AMZN, GOOGL, META, JPM, and XOM.
+        </p>
+        <Link href="/" className={`${buttonVariants({ variant: "outline" })} mt-6`}>
+          Back to the scorecard
+        </Link>
+      </section>
+    );
   }
 
   return (
