@@ -1,0 +1,5 @@
+numpy>=2
+pandas>=2
+pyarrow>=18
+scikit-learn>=1.5
+yfinance>=0.2
