@@ -73,7 +73,9 @@ export default async function TickerPage({ params }: PageProps) {
             </p>
           </div>
           <Badge variant={ticker.direction === "down" ? "destructive" : "secondary"} className="h-7 px-3 text-sm">
-            Next {results.horizonDays} days {ticker.direction} {formatMove(ticker.forecastReturn)}
+            Next {results.horizonDays} days{" "}
+            {ticker.direction === "down" ? "Down" : ticker.direction === "up" ? "Up" : "Flat"}{" "}
+            {formatMove(ticker.forecastReturn)}
           </Badge>
         </div>
       </div>
