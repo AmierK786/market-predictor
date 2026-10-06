@@ -52,9 +52,12 @@ export default function MethodPage() {
           Evaluation walks forward. The model trains on about {train} trading days
           (two years), then predicts the next {test} trading days, then rolls.
           Training stops {gap} trading days before the test window. That matches the
-          label length, so a training label cannot reach into the test period. A
-          test in <code className="text-foreground">pipeline/tests</code> fails if
-          that gap shrinks.
+          label length, so a training label cannot reach into the test period. The
+          in-sample column fits ridge on that same test window and then grades it.
+          The model has already seen the outcomes. Momentum does not move, because
+          it never fits a label. The purged column is the one to trust. A test
+          fails if the honest gap shrinks, and another checks that the in-sample
+          fold really is scored on rows it was fit on.
         </p>
       </section>
 

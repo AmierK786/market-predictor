@@ -42,6 +42,7 @@ def run_pipeline(ohlcv_path, results_path) -> dict:
                 "forecastReturn": detail["forecastReturn"],
                 "direction": detail["direction"],
                 "metrics": detail["metrics"],
+                "leakedMetrics": detail["leakedMetrics"],
                 "strategyMultiple": detail["strategyMultiple"],
                 "buyHoldMultiple": detail["buyHoldMultiple"],
             }

@@ -1,6 +1,6 @@
 # Meridian
 
-Meridian is a daily forecast bench for ten liquid US stocks. It predicts the next five trading days with a ridge regression, then scores that forecast against two baselines: a flat return, and a momentum rule. A dashboard shows the latest call, the out-of-sample hit rate, and a long-or-cash curve next to buy-and-hold.
+Meridian is a daily forecast bench for ten liquid US stocks. A ridge model is right about half the time out of sample and usually trails buy-and-hold. The scorecard puts that purged hit rate next to the same model fit on the days it is graded on, which is what a leaked score looks like.
 
 The evaluation is walk-forward. Training uses about two years of history and stops five trading days before each test window, so a training label cannot reach into the period being scored. Hit rates near one half are the expected neighborhood. Trailing buy-and-hold is a valid result. Meridian does not place orders.
 

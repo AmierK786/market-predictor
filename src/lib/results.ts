@@ -22,6 +22,9 @@ export type ScorecardRow = {
   forecastReturn: number;
   direction: Direction;
   metrics: Metrics;
+  leakedMetrics: {
+    ridge: ModelMetrics;
+  };
   strategyMultiple: number;
   buyHoldMultiple: number;
 };

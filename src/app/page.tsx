@@ -63,7 +63,8 @@ export default function HomePage() {
               <TableHead>Ticker</TableHead>
               <TableHead>Close</TableHead>
               <TableHead>5-day forecast</TableHead>
-              <TableHead>Ridge hit rate</TableHead>
+              <TableHead>Purged hit rate</TableHead>
+              <TableHead>In-sample hit rate</TableHead>
               <TableHead>Ridge MAE</TableHead>
               <TableHead>Momentum hit rate</TableHead>
               <TableHead>Long or cash</TableHead>
@@ -87,6 +88,7 @@ export default function HomePage() {
                   </Badge>
                 </TableCell>
                 <TableCell>{formatHit(row.metrics.ridge.directionalAccuracy)}</TableCell>
+                <TableCell>{formatHit(row.leakedMetrics.ridge.directionalAccuracy)}</TableCell>
                 <TableCell>{formatMae(row.metrics.ridge.mae)}</TableCell>
                 <TableCell>{formatHit(row.metrics.momentum.directionalAccuracy)}</TableCell>
                 <TableCell>{formatMultiple(row.strategyMultiple)}</TableCell>
@@ -97,8 +99,11 @@ export default function HomePage() {
         </Table>
       </div>
       <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-        Hit rate is the share of out-of-sample forecasts that got the sign right.
-        Long-or-cash is invested only when the ridge forecast is positive, and it
+        Purged hit rate keeps a {results.gapDays}-day gap so training labels cannot
+        reach the test window. In-sample hit rate fits the ridge model on those
+        same days and then grades them. Momentum does not change, because it never
+        fits a label. Long-or-cash is invested only when the purged ridge forecast
+        is positive, and it
         pays {results.costBps} bps each time that position changes. Buy-and-hold
         uses the same dates with no trading cost. A higher hit rate can still trail
         buy-and-hold.

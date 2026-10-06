@@ -32,6 +32,13 @@ export function formatHit(rate: number | null) {
   return `${(rate * 100).toFixed(1)}%`;
 }
 
+export function formatHitGap(honest: number | null, leaked: number | null) {
+  if (honest == null || leaked == null) return "—";
+  const points = (leaked - honest) * 100;
+  const sign = points > 0 ? "+" : "";
+  return `${sign}${points.toFixed(1)} pt`;
+}
+
 export function formatMae(mae: number | null) {
   if (mae == null) return "—";
   return `${(mae * 100).toFixed(2)} pt`;

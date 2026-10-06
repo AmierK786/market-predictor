@@ -10,6 +10,7 @@ import {
   formatDate,
   formatCorrelation,
   formatHit,
+  formatHitGap,
   formatMae,
   formatMove,
   formatMultiple,
@@ -94,14 +95,21 @@ export default async function TickerPage({ params }: PageProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardDescription>Ridge hit rate</CardDescription>
+            <CardDescription>Purged ridge hit rate</CardDescription>
             <CardTitle className="text-2xl">
               {formatHit(ticker.metrics.ridge.directionalAccuracy)}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Momentum hit {formatHit(ticker.metrics.momentum.directionalAccuracy)}. The flat
-            forecast has no direction, so it is scored on error only.
+            Fit on these same days:{" "}
+            {formatHit(ticker.leakedMetrics.ridge.directionalAccuracy)} (
+            {formatHitGap(
+              ticker.metrics.ridge.directionalAccuracy,
+              ticker.leakedMetrics.ridge.directionalAccuracy,
+            )}
+            ). That model had already seen the outcomes it was graded on. Momentum
+            stays at {formatHit(ticker.metrics.momentum.directionalAccuracy)} because
+            it never fits a label.
           </CardContent>
         </Card>
         <Card>

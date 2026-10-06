@@ -17,7 +17,7 @@ from meridian.metrics import (
     rank_correlation,
 )
 from meridian.models import fit_ridge, momentum_forecast, predict_ridge, zero_forecast
-from meridian.splits import iter_folds
+from meridian.splits import insample_folds, iter_folds
 
 
 def _metric_block(predicted: list[float], realized: list[float]) -> dict:
@@ -38,6 +38,27 @@ def _metric_block(predicted: list[float], realized: list[float]) -> dict:
     }
 
 
+def _collect(labeled: pd.DataFrame, folds) -> tuple[dict, list[float], list[str]]:
+    collected = {"zero": [], "momentum": [], "ridge": []}
+    realized: list[float] = []
+    dates: list[str] = []
+    for train_start, train_end, test_start, test_end in folds:
+        train = labeled.iloc[train_start:train_end]
+        test = labeled.iloc[test_start:test_end]
+        model = fit_ridge(
+            train[FEATURE_COLUMNS].to_numpy(),
+            train["forward_return"].to_numpy(),
+        )
+        collected["ridge"].extend(
+            predict_ridge(model, test[FEATURE_COLUMNS].to_numpy()).tolist()
+        )
+        collected["momentum"].extend(momentum_forecast(test["ret_21"].to_numpy()).tolist())
+        collected["zero"].extend(zero_forecast(len(test)).tolist())
+        realized.extend(test["forward_return"].astype(float).tolist())
+        dates.extend(pd.to_datetime(test["date"]).dt.strftime("%Y-%m-%d").tolist())
+    return collected, realized, dates
+
+
 def evaluate_symbol(frame: pd.DataFrame) -> dict:
     featured = build_frame(frame)
     labeled = featured.dropna(subset=FEATURE_COLUMNS + ["forward_return"]).reset_index(drop=True)
@@ -46,23 +67,11 @@ def evaluate_symbol(frame: pd.DataFrame) -> dict:
         raise ValueError("no rows with complete features")
 
     as_of = ready.iloc[-1]
-    collected = {"zero": [], "momentum": [], "ridge": []}
-    realized: list[float] = []
-    dates: list[str] = []
-
-    for train_start, train_end, test_start, test_end in iter_folds(len(labeled)):
-        train = labeled.iloc[train_start:train_end]
-        test = labeled.iloc[test_start:test_end]
-        model = fit_ridge(
-            train[FEATURE_COLUMNS].to_numpy(),
-            train["forward_return"].to_numpy(),
-        )
-        ridge_hat = predict_ridge(model, test[FEATURE_COLUMNS].to_numpy())
-        collected["ridge"].extend(ridge_hat.tolist())
-        collected["momentum"].extend(momentum_forecast(test["ret_21"].to_numpy()).tolist())
-        collected["zero"].extend(zero_forecast(len(test)).tolist())
-        realized.extend(test["forward_return"].astype(float).tolist())
-        dates.extend(pd.to_datetime(test["date"]).dt.strftime("%Y-%m-%d").tolist())
+    honest_folds = list(iter_folds(len(labeled)))
+    collected, realized, dates = _collect(labeled, honest_folds)
+    leaked, leaked_realized, leaked_dates = _collect(labeled, insample_folds(honest_folds))
+    if leaked_dates != dates:
+        raise RuntimeError("leaked and purged scores must cover the same dates")
 
     train_live = labeled.tail(min(TRAIN_DAYS, len(labeled)))
     live = fit_ridge(
@@ -97,6 +106,9 @@ def evaluate_symbol(frame: pd.DataFrame) -> dict:
         "direction": direction,
         "coefficients": coefficients,
         "metrics": {name: _metric_block(values, realized) for name, values in collected.items()},
+        "leakedMetrics": {
+            "ridge": _metric_block(leaked["ridge"], leaked_realized),
+        },
         "prices": prices,
         "equity": curve,
         "strategyMultiple": curve[-1]["model"] if curve else 1.0,

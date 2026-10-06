@@ -29,3 +29,14 @@ def iter_folds(
         train_start = train_end - train_size
         yield train_start, train_end, test_start, test_start + test_size
         test_start += test_size
+
+
+def insample_folds(folds):
+    """Fit and grade each test window on the same rows.
+
+    Every label being scored was inside the training set. Test dates stay the
+    same as the purged folds so the two hit rates can be compared.
+    """
+
+    for _train_start, _train_end, test_start, test_end in folds:
+        yield test_start, test_end, test_start, test_end
